@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>수학 탐구보고서 검색 시스템</title>
+<script src="data.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', 'Apple SD Gothic Neo', sans-serif; background: #f0f4f8; min-height: 100vh; }
+
+  header {
+    background: linear-gradient(135deg, #1a3a6b, #2563eb);
+    color: white; padding: 28px 40px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  }
+  header h1 { font-size: 1.7rem; font-weight: 700; letter-spacing: -0.5px; }
+  header p { font-size: 0.9rem; opacity: 0.8; margin-top: 4px; }
+
+  .filter-section {
+    background: white;
+    padding: 24px 40px;
+    border-bottom: 1px solid #e2e8f0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+
+  .filter-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .filter-row:last-child { margin-bottom: 0; }
+
+  .filter-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #64748b;
+    background: #f1f5f9;
+    padding: 5px 12px;
+    border-radius: 20px;
+    min-width: 90px;
+    text-align: center;
+    letter-spacing: 0.3px;
+  }
+
+  .filter-btn {
+    padding: 6px 16px;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 20px;
+    background: white;
+    font-size: 0.82rem;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    font-weight: 500;
+  }
+  .filter-btn:hover { border-color: #2563eb; color: #2563eb; }
+  .filter-btn.active {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: white;
+    font-weight: 600;
+  }
+
+  .search-bar {
+    padding: 16px 40px;
+    background: white;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  .search-bar input {
+    width: 100%;
+    padding: 11px 20px;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 25px;
+    font-size: 0.92rem;
+    outline: none;
+    transition: border-color 0.2s;
+    color: #334155;
+  }
+  .search-bar input:focus { border-color: #2563eb; }
+
+  .result-info {
+    padding: 14px 40px 6px;
+    font-size: 0.82rem;
+    color: #94a3b8;
+  }
+  .result-info span { color: #2563eb; font-weight: 700; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    padding: 16px 40px 40px;
+  }
+
+  .card {
+    background: white;
+    border-radius: 14px;
+    padding: 22px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1.5px solid #e2e8f0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(37,99,235,0.13);
+    border-color: #93c5fd;
+  }
+
+  .card-badges {
+    display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px;
+  }
+  .badge {
+    font-size: 0.72rem; padding: 3px 10px; border-radius: 12px; font-weight: 600;
+  }
+  .badge-curriculum { background: #dbeafe; color: #1d4ed8; }
+  .badge-topic { background: #ede9fe; color: #6d28d9; }
+  .badge-theme-스포츠 { background: #dcfce7; color: #166534; }
+  .badge-theme-생명 { background: #fce7f3; color: #9d174d; }
+  .badge-theme-경제 { background: #fef3c7; color: #92400e; }
+
+  .card h3 { font-size: 0.95rem; color: #1e293b; font-weight: 700; line-height: 1.45; margin-bottom: 8px; }
+  .card p { font-size: 0.8rem; color: #94a3b8; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+  .no-result {
+    grid-column: 1/-1; text-align: center;
+    padding: 60px 0; color: #94a3b8; font-size: 1rem;
+  }
+
+  /* ── 팝업 ── */
+  .overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(15,23,42,0.55); z-index: 1000;
+    justify-content: center; align-items: center;
+    backdrop-filter: blur(3px);
+  }
+  .overlay.show { display: flex; }
+
+  .popup {
+    background: white; border-radius: 20px;
+    padding: 36px; max-width: 520px; width: 90%;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.2);
+    position: relative; animation: popIn 0.22s ease;
+  }
+  @keyframes popIn {
+    from { transform: scale(0.92); opacity: 0; }
+    to   { transform: scale(1);    opacity: 1; }
+  }
+
+  .popup-close {
+    position: absolute; top: 16px; right: 20px;
+    font-size: 1.4rem; cursor: pointer; color: #94a3b8;
+    background: none; border: none; line-height: 1;
+  }
+  .popup-close:hover { color: #334155; }
+
+  .popup h2 { font-size: 1.15rem; color: #1e293b; font-weight: 700; margin-bottom: 14px; line-height: 1.5; }
+  .popup-badges { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 18px; }
+  .popup-desc {
+    font-size: 0.88rem; color: #475569; line-height: 1.7;
+    background: #f8fafc; padding: 16px; border-radius: 10px; margin-bottom: 22px;
+  }
+
+  .btn-download {
+    display: block; width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #1a3a6b, #2563eb);
+    color: white; border: none; border-radius: 12px;
+    font-size: 0.95rem; font-weight: 700; cursor: pointer;
+    text-align: center; text-decoration: none;
+    transition: opacity 0.2s;
+    letter-spacing: 0.3px;
+  }
+  .btn-download:hover { opacity: 0.88; }
+
+  @media (max-width: 600px) {
+    header, .filter-section, .search-bar, .result-info, .grid { padding-left: 16px; padding-right: 16px; }
+    header h1 { font-size: 1.3rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📐 수학 탐구보고서 검색 시스템</h1>
+  <p>교과과정 · 수학 주제 · 탐구분야로 보고서를 검색하세요</p>
+</header>
+
+<div class="filter-section">
+  <div class="filter-row" id="row-curriculum"></div>
+  <div class="filter-row" id="row-topic"></div>
+  <div class="filter-row" id="row-theme"></div>
+</div>
+
+<div class="search-bar">
+  <input type="text" id="searchInput" placeholder="🔍  보고서 제목 또는 내용 검색...">
+</div>
+
+<div class="result-info" id="resultInfo"></div>
+<div class="grid" id="grid"></div>
+
+<!-- 팝업 -->
+<div class="overlay" id="overlay">
+  <div class="popup">
+    <button class="popup-close" onclick="closePopup()">✕</button>
+    <h2 id="popTitle"></h2>
+    <div class="popup-badges" id="popBadges"></div>
+    <div class="popup-desc" id="popDesc"></div>
+    <a class="btn-download" id="popDownload" href="#" download>⬇️  PDF 다운로드</a>
+  </div>
+</div>
+
+<script>
+let activeFilters = { curriculum: null, topic: null, theme: null };
+
+function buildFilters() {
+  const rows = [
+    { id: 'row-curriculum', label: '📚 교과과정', key: 'curriculum', items: CONFIG.교과과정 },
+    { id: 'row-topic',      label: '📊 수학주제', key: 'topic',      items: CONFIG.주제 },
+    { id: 'row-theme',      label: '🔬 탐구분야', key: 'theme',      items: CONFIG.탐구주제 }
+  ];
+  rows.forEach(r => {
+    const row = document.getElementById(r.id);
+    row.innerHTML = `<span class="filter-label">${r.label}</span>`;
+    r.items.forEach(item => {
+      const btn = document.createElement('button');
+      btn.className = 'filter-btn';
+      btn.textContent = item;
+      btn.onclick = () => toggleFilter(r.key, item, btn);
+      row.appendChild(btn);
+    });
+  });
+}
+
+function toggleFilter(key, value, btn) {
+  if (activeFilters[key] === value) {
+    activeFilters[key] = null;
+    btn.classList.remove('active');
+  } else {
+    document.querySelectorAll(`#row-${key === 'curriculum' ? 'curriculum' : key === 'topic' ? 'topic' : 'theme'} .filter-btn`)
+      .forEach(b => b.classList.remove('active'));
+    activeFilters[key] = value;
+    btn.classList.add('active');
+  }
+  render();
+}
+
+function render() {
+  const query = document.getElementById('searchInput').value.trim().toLowerCase();
+  const filtered = REPORTS.filter(r => {
+    if (activeFilters.curriculum && r.curriculum !== activeFilters.curriculum) return false;
+    if (activeFilters.topic && r.topic !== activeFilters.topic) return false;
+    if (activeFilters.theme && r.theme !== activeFilters.theme) return false;
+    if (query && !r.title.toLowerCase().includes(query) && !r.desc.toLowerCase().includes(query)) return false;
+    return true;
+  });
+
+  document.getElementById('resultInfo').innerHTML =
+    `총 <span>${filtered.length}</span>개의 보고서`;
+
+  const grid = document.getElementById('grid');
+  if (filtered.length === 0) {
+    grid.innerHTML = '<div class="no-result">😅 조건에 맞는 보고서가 없습니다.</div>';
+    return;
+  }
+  grid.innerHTML = filtered.map((r, i) => `
+    <div class="card" onclick="openPopup(${REPORTS.indexOf(r)})">
+      <div class="card-badges">
+        <span class="badge badge-curriculum">${r.curriculum}</span>
+        <span class="badge badge-topic">${r.topic}</span>
+        <span class="badge badge-theme-${r.theme}">${r.theme}</span>
+      </div>
+      <h3>${r.title}</h3>
+      <p>${r.desc}</p>
+    </div>
+  `).join('');
+}
+
+function openPopup(idx) {
+  const r = REPORTS[idx];
+  document.getElementById('popTitle').textContent = r.title;
+  document.getElementById('popBadges').innerHTML = `
+    <span class="badge badge-curriculum">${r.curriculum}</span>
+    <span class="badge badge-topic">${r.topic}</span>
+    <span class="badge badge-theme-${r.theme}">${r.theme}</span>
+  `;
+  document.getElementById('popDesc').textContent = r.desc;
+  document.getElementById('popDownload').href = r.file;
+  document.getElementById('popDownload').download = r.title + '.pdf';
+  document.getElementById('overlay').classList.add('show');
+}
+
+function closePopup() {
+  document.getElementById('overlay').classList.remove('show');
+}
+
+document.getElementById('overlay').addEventListener('click', function(e) {
+  if (e.target === this) closePopup();
+});
+
+document.getElementById('searchInput').addEventListener('input', render);
+
+buildFilters();
+render();
+</script>
+</body>
+</html>
