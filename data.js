@@ -20,44 +20,12 @@ const CONFIG = {
 // =============================================
 
 const REPORTS = [
-  {
-    title: "야구 타율과 지수함수의 관계 분석",
-    curriculum: "미적1",
-    topic: "지수함수",
-    theme: "스포츠",
-    desc: "야구 선수의 타율 변화를 지수함수 모델로 분석하고, 성적 예측 가능성을 탐구한 보고서입니다.",
-    file: "reports/sample01.pdf"
-  },
-  {
-    title: "인구 증가율과 로그함수 모델링",
-    curriculum: "공통수학2",
-    topic: "로그함수",
-    theme: "생명",
-    desc: "세계 인구 증가 데이터를 로그함수로 모델링하고 미래 인구를 예측한 탐구 보고서입니다.",
-    file: "reports/sample02.pdf"
-  },
-  {
-    title: "물가 상승률과 회귀분석",
-    curriculum: "확률과통계",
-    topic: "회귀분석",
-    theme: "경제",
-    desc: "소비자 물가지수 데이터를 활용해 선형 회귀분석을 적용한 경제 탐구 보고서입니다.",
-    file: "reports/sample03.pdf"
-  },
-  {
-    title: "심박수 변화와 삼각함수 모델",
-    curriculum: "미적2",
-    topic: "삼각함수",
-    theme: "생명",
-    desc: "운동 중 심박수 변화를 삼각함수 주기 함수로 모델링한 생명과학 융합 탐구 보고서입니다.",
-    file: "reports/sample04.pdf"
-  },
-  {
-    title: "GDP 성장과 이차함수 예측 모델",
-    curriculum: "공통수학1",
-    topic: "이차함수",
-    theme: "경제",
-    desc: "국가별 GDP 성장 데이터를 이차함수로 근사하여 경제 성장 패턴을 분석한 보고서입니다.",
-    file: "reports/sample05.pdf"
-  }
+ {
+  title: "실제약과 위약의 치료관계 — 지수함수(eˣ) 추정",
+  curriculum: "미적2",
+  topic: "지수함수",
+  theme: "생명",
+  desc: "우울증 치료 데이터를 활용해 위약(플라세보)과 실제약의 효과 관계를 지수함수 e^x로 모델링한 탐구보고서. 위약 효과값 x를 ln 변환 후 일차함수를 유도하여 지수함수 y = e^(0.64x + 0.49)를 추정하고, 위약 효과가 1.5일 때 실제약 효과를 예측하였다.",
+  file: "reports/[e^x함수]실제약과위약의치료관계_함수추정.pdf"
+}
 ];
